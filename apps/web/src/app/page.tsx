@@ -400,7 +400,7 @@ export default function LandingPage() {
           </nav>
 
           <div className="text-xs text-slate-600 text-center md:text-right">
-            <div>&copy; {new Date().getFullYear()} ProgressiveNovus Private Limited</div>
+            <div>&copy; {new Date().getFullYear()} TheAnsh</div>
             <div className="mt-0.5">Assam, India · GST compliant · DPDPA ready</div>
           </div>
         </div>

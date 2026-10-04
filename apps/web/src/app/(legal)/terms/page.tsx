@@ -5,10 +5,10 @@ export const metadata: Metadata = {
   description: 'Terms and conditions for using Dine&Stay OS restaurant management software.',
 };
 
-const LAST_UPDATED = '1 June 2025';
-const COMPANY      = 'Progressive Novus Private Limited';
-const EMAIL        = 'legal@dinestay.app';
-const ADDRESS      = 'Bengaluru, Karnataka, India';
+const LAST_UPDATED = '4 October 2026';
+const COMPANY      = 'Ansh';
+const EMAIL        = 'anshuman15b@gmail.com';
+const ADDRESS      = 'Jorhat, Assam, India';
 
 export default function TermsPage() {
   return (
@@ -169,7 +169,7 @@ export default function TermsPage() {
         <p>
           These Terms are governed by the laws of India. Any dispute shall first be attempted to be
           resolved by good-faith negotiation. If unresolved within 30 days, disputes shall be subject
-          to the exclusive jurisdiction of the courts in Bengaluru, Karnataka, India.
+          to the exclusive jurisdiction of the courts in Jorhat, Assam , India.
         </p>
       </Section>
 

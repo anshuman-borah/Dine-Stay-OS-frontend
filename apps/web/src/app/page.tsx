@@ -401,7 +401,7 @@ export default function LandingPage() {
 
           <div className="text-xs text-slate-600 text-center md:text-right">
             <div>&copy; {new Date().getFullYear()} ProgressiveNovus Private Limited</div>
-            <div className="mt-0.5">Bengaluru, India · GST compliant · DPDPA ready</div>
+            <div className="mt-0.5">Assam, India · GST compliant · DPDPA ready</div>
           </div>
         </div>
       </footer>

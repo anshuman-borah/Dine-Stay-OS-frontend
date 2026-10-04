@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   description: 'How Dine&Stay OS collects, uses, and protects your personal data.',
 };
 
-const LAST_UPDATED = '1 June 2025';
-const COMPANY      = 'Progressive Novus Private Limited';
-const EMAIL        = 'privacy@dinestay.app';
+const LAST_UPDATED = '4 october 2026';
+const COMPANY      = 'Ansh';
+const EMAIL        = 'anshuman15b@gmailcom';
 
 export default function PrivacyPage() {
   return (

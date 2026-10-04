@@ -187,7 +187,7 @@ export default function OnboardingPage() {
                   <label className="label">Address (optional)</label>
                   <input
                     className="input"
-                    placeholder="123, MG Road, Ground Floor"
+                    placeholder="123, Jorjat, Assam"
                     value={form.addressLine1}
                     onChange={(e) => patch('addressLine1', e.target.value)}
                   />
@@ -197,7 +197,7 @@ export default function OnboardingPage() {
                     <label className="label">City <span className="text-red-600 dark:text-red-400">*</span></label>
                     <input
                       className="input"
-                      placeholder="Bengaluru"
+                      placeholder="Jorhat"
                       value={form.city}
                       onChange={(e) => patch('city', e.target.value)}
                       required

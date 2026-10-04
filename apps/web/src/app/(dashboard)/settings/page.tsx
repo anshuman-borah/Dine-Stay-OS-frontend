@@ -32,8 +32,8 @@ function validatePan(v: string): string | null {
 
 // ─── Notification preference toggles ─────────────────────────────────────────
 const NOTIF_PREFS = [
-  { key: 'notifNewOrder',     label: 'New order placed',         sub: 'Receive email/SMS when a new order is created' },
-  { key: 'notifLowStock',     label: 'Low stock alerts',         sub: 'Get notified when inventory drops below minimum level' },
+  { key: 'notifNewOrder',     label: 'New order placed',       sub: 'Receive email/SMS when a new order is created' },
+  { key: 'notifLowStock',     label: 'Low stock alerts',       sub: 'Get notified when inventory drops below minimum level' },
   { key: 'notifShiftSummary', label: 'Shift close summary',      sub: 'Receive a summary report when a shift is closed' },
   { key: 'notifDailyReport',  label: 'Daily sales report',       sub: "Morning summary of previous day's sales emailed to you" },
   { key: 'notifBillEmail',    label: 'Bill email confirmations',  sub: 'CC yourself whenever a bill is emailed to a customer' },
@@ -41,13 +41,13 @@ const NOTIF_PREFS = [
 
 const TABS = [
   { id: 'business',      label: 'Business Info',  icon: Building2,      roles: ['owner', 'manager', 'restaurant_manager', 'hotel_manager'] },
-  { id: 'gst',           label: 'GST & Tax',       icon: FileText,       roles: ['owner'] },
-  { id: 'subscription',  label: 'Subscription',    icon: CreditCard,     roles: ['owner'] },
-  { id: 'payments',      label: 'Payments',        icon: Zap,            roles: ['owner'] },
-  { id: 'integrations',  label: 'Integrations',    icon: Link,           roles: ['owner', 'hotel_manager'], context: 'branch' },
-  { id: 'printer',       label: 'Printer',         icon: Printer,        roles: ['owner', 'manager', 'restaurant_manager', 'hotel_manager', 'cashier', 'waiter', 'kitchen', 'receptionist'], context: 'branch' },
-  { id: 'notifications', label: 'Notifications',   icon: Bell,           roles: ['owner', 'manager', 'restaurant_manager', 'hotel_manager'] },
-  { id: 'security',      label: 'Security',        icon: Monitor,        roles: ['owner', 'manager', 'restaurant_manager', 'hotel_manager', 'cashier', 'waiter', 'kitchen', 'receptionist', 'inventory', 'housekeeping'] },
+  { id: 'gst',           label: 'GST & Tax',      icon: FileText,       roles: ['owner'] },
+  { id: 'subscription',  label: 'Subscription',   icon: CreditCard,     roles: ['owner'] },
+  { id: 'payments',      label: 'Payments',       icon: Zap,            roles: ['owner'] },
+  { id: 'integrations',  label: 'Integrations',   icon: Link,           roles: ['owner', 'hotel_manager'], context: 'branch' },
+  { id: 'printer',       label: 'Printer',        icon: Printer,        roles: ['owner', 'manager', 'restaurant_manager', 'hotel_manager', 'cashier', 'waiter', 'kitchen', 'receptionist'], context: 'branch' },
+  { id: 'notifications', label: 'Notifications',  icon: Bell,           roles: ['owner', 'manager', 'restaurant_manager', 'hotel_manager'] },
+  { id: 'security',      label: 'Security',       icon: Monitor,        roles: ['owner', 'manager', 'restaurant_manager', 'hotel_manager', 'cashier', 'waiter', 'kitchen', 'receptionist', 'inventory', 'housekeeping'] },
 ];
 
 export default function SettingsPage() {
@@ -560,7 +560,7 @@ export default function SettingsPage() {
               <label className="label mb-0">Print Method</label>
               <div className="flex gap-3">
                 {([
-                  { id: 'browser', label: 'Browser Print',    desc: 'Works on any browser' },
+                  { id: 'browser', label: 'Browser Print',   desc: 'Works on any browser' },
                   { id: 'serial',  label: 'Web Serial (USB)', desc: 'Chrome 89+ · direct ESC/POS' },
                 ] as const).map((m) => (
                   <button
@@ -929,7 +929,7 @@ function PaymentsTab() {
 }
 
 /* ─── Integrations Tab ─────────────────────────────────────────────────────── */
-export function IntegrationsTab({ tenantId, userBranchId }: { tenantId: string, userBranchId?: string }) {
+function IntegrationsTab({ tenantId, userBranchId }: { tenantId: string, userBranchId?: string }) {
   const [copied, setCopied] = useState(false);
   const branchId = userBranchId || '[YOUR-BRANCH-ID]';
   const webhookUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/api/v1/hotel/webhooks/channel-manager/${tenantId}/${branchId}`;

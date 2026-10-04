@@ -1,4 +1,4 @@
-'use client';
+// 'use client';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, apiFetch, apiPost } from '@/lib/api';
@@ -70,7 +70,8 @@ export default function HotelBillingPage() {
       if (!detail) throw new Error('Bill data not found');
 
       printHtml({
-        restaurantName: 'Dine&Stay Hotel',
+        // 🟢 FIXED: Dynamically pulls the branch or tenant name!
+        restaurantName: detail.branch?.name || user?.tenantName || 'Receipt',
         billNumber: detail.billNumber,
         invoiceDate: dayjs(detail.createdAt).format('D MMM YYYY h:mm A'),
         orderType: 'hotel',
@@ -106,7 +107,8 @@ export default function HotelBillingPage() {
     if (!billDetail) return;
     try {
       printHtml({
-        restaurantName: 'Dine&Stay Hotel',
+        // 🟢 FIXED: Dynamically pulls the branch or tenant name!
+        restaurantName: billDetail.branch?.name || user?.tenantName || 'Receipt',
         billNumber: billDetail.billNumber,
         invoiceDate: dayjs(billDetail.createdAt).format('D MMM YYYY h:mm A'),
         orderType: 'hotel',

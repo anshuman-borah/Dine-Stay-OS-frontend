@@ -1,3 +1,4 @@
+
 // 'use client';
 // import { useState, useEffect } from 'react';
 // import { useMutation } from '@tanstack/react-query';
@@ -9,18 +10,21 @@
 // import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 // import { printHtml } from '@/lib/printer';
 // import { amountInWords } from '@/lib/gst';
-// import { X, Printer, CheckCircle, Loader2, Mail, WifiOff } from 'lucide-react';
+// import { X, Printer, CheckCircle, Loader2, Mail, WifiOff, Key } from 'lucide-react';
 // import { cn } from '@/lib/utils';
 
-// type PayMethod = 'cash' | 'card' | 'upi' | 'wallet' | 'credit' | 'complimentary';
+// // 🟢 NEW: Added 'room_charge'
+// type PayMethod = 'cash' | 'card' | 'upi' | 'wallet' | 'credit' | 'complimentary' | 'room_charge';
 
 // // Methods that require Razorpay (online only)
 // const RAZORPAY_METHODS: PayMethod[] = ['upi', 'card', 'credit'];
 
+// // 🟢 NEW: Added the 'Room' payment button
 // const PAYMENT_METHODS: { id: PayMethod; label: string; icon: string }[] = [
 //   { id: 'cash',          label: 'Cash',   icon: '💵' },
 //   { id: 'upi',           label: 'UPI',    icon: '📱' },
 //   { id: 'card',          label: 'Card',   icon: '💳' },
+//   { id: 'room_charge',   label: 'Room',   icon: '🏨' },
 //   { id: 'wallet',        label: 'Wallet', icon: '👛' },
 //   { id: 'credit',        label: 'Credit', icon: '📋' },
 //   { id: 'complimentary', label: 'Comp',   icon: '🎁' },
@@ -86,6 +90,10 @@
 //   const defaultRoundOff = round2(defaultPayable - exactGrandTotal);
 
 //   const [method, setMethod] = useState<PayMethod>('cash');
+  
+//   // 🟢 NEW: State for the Room Number
+//   const [roomNumber, setRoomNumber] = useState('');
+  
 //   const [customerName, setCustomerName] = useState('');
 //   const [customerPhone, setCustomerPhone] = useState('');
 //   const [customerGstin, setCustomerGstin] = useState('');
@@ -214,6 +222,8 @@
 //             method,
 //             amount: method === 'cash' ? round2(parseFloat(cashEntered) || 0) : billAmount,
 //             ...(razorpayPaymentId ? { referenceNo: razorpayPaymentId } : {}),
+//             // 🟢 NEW: Assign Room Number to referenceNo if room_charge is selected
+//             ...(method === 'room_charge' ? { referenceNo: roomNumber } : {}),
 //           },
 //         ];
 
@@ -279,6 +289,14 @@
 //   const billMutation = useMutation({
 //     networkMode: 'always',
 //     mutationFn: async () => {
+//       // 🟢 Prevent submitting if Room Charge is selected but no room is entered
+//       if (method === 'room_charge' && !roomNumber.trim() && !isSplit) {
+//           throw new Error('Please enter a room number to charge this bill to.');
+//       }
+//       if (isSplit && splitAmounts['room_charge'] && parseFloat(splitAmounts['room_charge']) > 0 && !roomNumber.trim()){
+//            throw new Error('Please enter a room number to charge this bill to.');
+//       }
+
 //       if (isRazorpayMethod && isOnline) {
 //         return new Promise<any>(async (resolve, reject) => {
 //           setIsRazorpayPending(true);
@@ -386,6 +404,7 @@
 //   };
 
 //   const isPending = billMutation.isPending || isRazorpayPending;
+//   const isRoomChargeBlocked = (method === 'room_charge' && !roomNumber.trim() && !isSplit);
 
 //   return (
 //     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -510,15 +529,30 @@
 //                     {PAYMENT_METHODS.map((m) => {
 //                       const isBlocked = !isOnline && RAZORPAY_METHODS.includes(m.id);
 //                       return (
-//                         <div key={m.id} className="flex items-center justify-between p-2 border rounded-lg bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
-//                           <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-//                             <span>{m.icon}</span> <span className={isBlocked ? 'text-slate-400' : ''}>{m.label}</span>
-//                             {isBlocked && <span className="text-[10px] text-red-500">(Offline)</span>}
+//                         <div key={m.id} className="flex flex-col gap-2 p-2 border rounded-lg bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+//                           <div className="flex items-center justify-between">
+//                             <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+//                               <span>{m.icon}</span> <span className={isBlocked ? 'text-slate-400' : ''}>{m.label}</span>
+//                               {isBlocked && <span className="text-[10px] text-red-500">(Offline)</span>}
+//                             </div>
+//                             <div className="flex items-center gap-2">
+//                               {!isBlocked && <button onClick={() => fillRemainingSplit(m.id)} className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-amber-600 px-2 py-1 rounded">MAX</button>}
+//                               <input type="number" min="0" step="0.01" disabled={isBlocked} className="input w-28 text-right font-medium" placeholder="0.00" value={splitAmounts[m.id] || ''} onChange={(e) => handleSplitChange(m.id, e.target.value)} />
+//                             </div>
 //                           </div>
-//                           <div className="flex items-center gap-2">
-//                             {!isBlocked && <button onClick={() => fillRemainingSplit(m.id)} className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-amber-600 px-2 py-1 rounded">MAX</button>}
-//                             <input type="number" min="0" step="0.01" disabled={isBlocked} className="input w-28 text-right font-medium" placeholder="0.00" value={splitAmounts[m.id] || ''} onChange={(e) => handleSplitChange(m.id, e.target.value)} />
-//                           </div>
+                          
+//                           {/* 🟢 NEW: Room Number input when Room is selected during Split */}
+//                           {m.id === 'room_charge' && (parseFloat(splitAmounts[m.id] || '0') > 0) && (
+//                             <div className="pl-6 pr-2 pb-1 relative">
+//                               <Key size={13} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400" />
+//                               <input 
+//                                 className="input text-xs pl-8 w-full border-amber-300 bg-amber-50 dark:bg-amber-900/20" 
+//                                 placeholder="Enter Room Number" 
+//                                 value={roomNumber} 
+//                                 onChange={(e) => setRoomNumber(e.target.value)}
+//                               />
+//                             </div>
+//                           )}
 //                         </div>
 //                       );
 //                     })}
@@ -529,7 +563,7 @@
 //                   </div>
 //                 ) : (
 //                   <>
-//                     <div className="grid grid-cols-3 gap-2">
+//                     <div className="grid grid-cols-4 gap-2">
 //                       {PAYMENT_METHODS.map((m) => {
 //                         const isBlocked = !isOnline && RAZORPAY_METHODS.includes(m.id);
 //                         return (
@@ -540,6 +574,7 @@
 //                         );
 //                       })}
 //                     </div>
+                    
 //                     {method === 'cash' && (
 //                       <div className="mt-4">
 //                         <label className="label">Cash Tendered</label>
@@ -564,6 +599,26 @@
 //                         </div>
 //                       </div>
 //                     )}
+                    
+//                     {/* 🟢 NEW: Room Number Input Box */}
+//                     {method === 'room_charge' && (
+//                       <div className="mt-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4">
+//                         <label className="label text-amber-900 dark:text-amber-100 flex items-center gap-1.5 mb-2">
+//                           <Key size={14} className="text-amber-600" />
+//                           Guest Room Number
+//                         </label>
+//                         <input 
+//                           className="input text-lg font-bold border-amber-300 focus:ring-amber-500/20" 
+//                           placeholder="e.g. 101"
+//                           value={roomNumber} 
+//                           onChange={(e) => setRoomNumber(e.target.value)} 
+//                         />
+//                         <p className="text-xs text-amber-700 dark:text-amber-500 mt-2">
+//                           The total amount of ₹{formatInputAmount(finalTotal)} will be added to this room's checkout folio.
+//                         </p>
+//                       </div>
+//                     )}
+
 //                   </>
 //                 )}
 //               </div>
@@ -575,7 +630,7 @@
 //           <div className="px-6 pb-6 pt-2 border-t border-slate-200 dark:border-slate-800 flex-shrink-0">
 //             <button
 //               onClick={() => billMutation.mutate()}
-//               disabled={isPending || (!isOnline && RAZORPAY_METHODS.includes(method) && !isSplit) || (!isSplit && method === 'cash' && cashAmount < finalTotal - 0.01) || (isSplit && totalSplitPaid < finalTotal - 0.01)}
+//               disabled={isPending || (!isOnline && RAZORPAY_METHODS.includes(method) && !isSplit) || (!isSplit && method === 'cash' && cashAmount < finalTotal - 0.01) || (isSplit && totalSplitPaid < finalTotal - 0.01) || isRoomChargeBlocked}
 //               className="btn-primary w-full py-3 text-base"
 //             >
 //               {isPending ? <><Loader2 size={16} className="animate-spin" /> {isRazorpayPending ? 'Waiting for payment...' : 'Processing...'}</> : `Collect ₹${round2(finalTotal).toFixed(2)}`}
@@ -586,7 +641,6 @@
 //     </div>
 //   );
 // }
-
 'use client';
 import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
@@ -601,13 +655,11 @@ import { amountInWords } from '@/lib/gst';
 import { X, Printer, CheckCircle, Loader2, Mail, WifiOff, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// 🟢 NEW: Added 'room_charge'
 type PayMethod = 'cash' | 'card' | 'upi' | 'wallet' | 'credit' | 'complimentary' | 'room_charge';
 
 // Methods that require Razorpay (online only)
 const RAZORPAY_METHODS: PayMethod[] = ['upi', 'card', 'credit'];
 
-// 🟢 NEW: Added the 'Room' payment button
 const PAYMENT_METHODS: { id: PayMethod; label: string; icon: string }[] = [
   { id: 'cash',          label: 'Cash',   icon: '💵' },
   { id: 'upi',           label: 'UPI',    icon: '📱' },
@@ -664,7 +716,8 @@ export function BillingModal({
   onClose,
   onSuccess,
 }: Props) {
-  const { branchId, tenantId } = useAuthStore();
+  // 🟢 CHANGED: Grabbed 'user' from the Auth Store to get dynamic tenant details!
+  const { branchId, tenantId, user } = useAuthStore();
   const { cart, orderType, tableId, tableName, discountAmount, discountPercent } = usePosStore();
   const isOnline = useOnlineStatus();
 
@@ -678,10 +731,7 @@ export function BillingModal({
   const defaultRoundOff = round2(defaultPayable - exactGrandTotal);
 
   const [method, setMethod] = useState<PayMethod>('cash');
-  
-  // 🟢 NEW: State for the Room Number
   const [roomNumber, setRoomNumber] = useState('');
-  
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerGstin, setCustomerGstin] = useState('');
@@ -700,7 +750,7 @@ export function BillingModal({
   // Cash tendered defaults to payable amount
   const [cashEntered, setCashEntered] = useState<string>(formatInputAmount(defaultPayable));
 
-  // Auto-sync the totals if the parent component updates the math in the background!
+  // Auto-sync the totals if the parent component updates the math in the background
   useEffect(() => {
     if (!manualOverride) {
       setFinalTotal(defaultPayable);
@@ -720,7 +770,6 @@ export function BillingModal({
       return;
     }
     setMethod(m);
-    // Reset cash entered to final total when switching methods
     setCashEntered(formatInputAmount(finalTotal));
   };
 
@@ -810,7 +859,6 @@ export function BillingModal({
             method,
             amount: method === 'cash' ? round2(parseFloat(cashEntered) || 0) : billAmount,
             ...(razorpayPaymentId ? { referenceNo: razorpayPaymentId } : {}),
-            // 🟢 NEW: Assign Room Number to referenceNo if room_charge is selected
             ...(method === 'room_charge' ? { referenceNo: roomNumber } : {}),
           },
         ];
@@ -877,7 +925,6 @@ export function BillingModal({
   const billMutation = useMutation({
     networkMode: 'always',
     mutationFn: async () => {
-      // 🟢 Prevent submitting if Room Charge is selected but no room is entered
       if (method === 'room_charge' && !roomNumber.trim() && !isSplit) {
           throw new Error('Please enter a room number to charge this bill to.');
       }
@@ -964,7 +1011,12 @@ export function BillingModal({
     if (!billData) return;
     try {
       printHtml({
-        restaurantName: 'Dine&Stay Restaurant',
+        // 🟢 CHANGED: Replaced hardcoded text with dynamic user tenant name!
+        restaurantName: user?.tenantName || 'Receipt',
+        
+        // Note: address, phone, and gstin are omitted here so they stay hidden 
+        // on the receipt unless you explicitly pass them later.
+        
         billNumber: billData.billNumber,
         invoiceDate: new Date().toLocaleString('en-IN'),
         tableName: tableName || undefined,
@@ -1129,7 +1181,6 @@ export function BillingModal({
                             </div>
                           </div>
                           
-                          {/* 🟢 NEW: Room Number input when Room is selected during Split */}
                           {m.id === 'room_charge' && (parseFloat(splitAmounts[m.id] || '0') > 0) && (
                             <div className="pl-6 pr-2 pb-1 relative">
                               <Key size={13} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1188,7 +1239,6 @@ export function BillingModal({
                       </div>
                     )}
                     
-                    {/* 🟢 NEW: Room Number Input Box */}
                     {method === 'room_charge' && (
                       <div className="mt-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4">
                         <label className="label text-amber-900 dark:text-amber-100 flex items-center gap-1.5 mb-2">

@@ -1,0 +1,53 @@
+# ────────────────────────────────────────────────────────────────
+#  Dine&Stay OS — Development stack
+#  Usage:
+#    docker compose up              # start everything
+#    docker compose up -d           # start in background
+#    docker compose logs -f api     # follow API logs
+#    docker compose down -v         # stop + delete volumes
+# ────────────────────────────────────────────────────────────────
+
+services:
+  # ── Redis ─────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: dinestay_redis
+    restart: unless-stopped
+    command: redis-server --requirepass changeme
+    ports:
+      - "127.0.0.1:6379:6379"   # loopback only — not exposed to LAN/cloud network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "changeme", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ── MinIO (optional local object storage) ─────────────────────
+  # Only needed when STORAGE_DRIVER=s3 with local MinIO.
+  # Access the MinIO console at http://localhost:9001
+  minio:
+    image: minio/minio:latest
+    container_name: dinestay_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-changeme}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3-compatible API
+      - "9001:9001"   # Web console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - minio           # start with:  docker compose --profile minio up
+
+volumes:
+  redis_data:
+  minio_data:

@@ -1,0 +1,107 @@
+'use client';
+
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
+import { useAuthStore } from '@/store/auth.store';
+import { Store, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+
+export function BranchSwitcher() {
+  const { user, branchId, setBranch } = useAuthStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  
+  // Bring in the big guns for smooth transitions
+  const router = useRouter();
+  const qc = useQueryClient();
+
+  const { data: branches } = useQuery({
+    queryKey: ['branches'],
+    queryFn: () => apiFetch('/api/v1/branches').then((r) => r.data),
+  });
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 🏆 THE ENTERPRISE SWITCHER FUNCTION 
+  const handleSwitch = (newBranchId: string | null) => {
+    setIsOpen(false);
+    
+    // 1. Update the Zustand global state
+    setBranch(newBranchId);
+    
+    // 2. CRITICAL: Wipe the TanStack query cache so old branch data doesn't leak
+    qc.clear();
+    
+    // 3. Smoothly refresh the Next.js server components without a white flash
+    router.refresh();
+  };
+
+  const currentBranch = branches?.find((b: any) => b.id === branchId);
+  const displayLabel = currentBranch ? currentBranch.name : 'All Branches (Global)';
+
+  if (user?.role !== 'owner') {
+    return (
+      <div className="px-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="w-full flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-left opacity-90">
+          <Store size={14} className="text-amber-500 flex-shrink-0" />
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+            {currentBranch ? currentBranch.name : 'Branch Staff'}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative px-4 pb-3 border-b border-slate-200 dark:border-slate-800" ref={ref}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-950 hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 transition-colors text-left"
+      >
+        <div className="flex items-center gap-2 overflow-hidden">
+          <Store size={14} className="text-amber-500 flex-shrink-0" />
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{displayLabel}</span>
+        </div>
+        <ChevronDown size={14} className="text-slate-900 dark:text-slate-500 flex-shrink-0" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-4 right-4 mt-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
+          <button
+            onClick={() => handleSwitch(null)}
+            className={cn(
+              'w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-200 dark:bg-slate-700',
+              !branchId ? 'text-amber-600 dark:text-amber-400 font-bold bg-white dark:bg-slate-900/50' : 'text-slate-600 dark:text-slate-300'
+            )}
+          >
+            All Branches (Global)
+          </button>
+          
+          {branches?.map((b: any) => (
+            <button
+              key={b.id}
+              onClick={() => handleSwitch(b.id)}
+              className={cn(
+                'w-full text-left px-3 py-2 text-xs transition-colors hover:bg-slate-200 dark:bg-slate-700 truncate',
+                branchId === b.id ? 'text-amber-600 dark:text-amber-400 font-bold bg-white dark:bg-slate-900/50' : 'text-slate-600 dark:text-slate-300'
+              )}
+            >
+              {b.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

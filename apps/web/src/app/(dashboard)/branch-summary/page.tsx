@@ -91,6 +91,7 @@ function SectionCard({ title, icon: Icon, children, delayClass }: { title: strin
 
 export default function BranchSummaryPage() {
   const { user, branchId } = useAuthStore();
+  
   const [from, setFrom] = useState(monthStart());
   const [to,   setTo]   = useState(today());
 
@@ -112,7 +113,7 @@ export default function BranchSummaryPage() {
       [''],
       ['REVENUE'],
       ['Metric', 'Value'],
-      ['Total Revenue',       fmt(s.revenue?.total      || 0)],
+      ['Total Revenue',      fmt(s.revenue?.total      || 0)],
       ['Restaurant Revenue',  fmt(s.revenue?.restaurant || 0)],
       ['Hotel Revenue',       fmt(s.revenue?.hotel      || 0)],
       ['Monthly Revenue',     fmt(s.revenue?.month      || 0)],
@@ -280,7 +281,7 @@ export default function BranchSummaryPage() {
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp size={16} className="text-amber-500" />
               <div className="text-xs font-bold text-amber-500/90 uppercase tracking-widest">
-                Total Revenue
+                Period Revenue
               </div>
             </div>
             <div className="text-5xl font-black text-white tracking-tight">

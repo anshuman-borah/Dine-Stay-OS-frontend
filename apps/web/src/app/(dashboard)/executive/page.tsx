@@ -84,20 +84,24 @@ function KpiCard({
 
 export default function OwnerDashboardPage() {
   const { user, branchId } = useAuthStore();
+  
+  // 🟢 FIX: Default to Month Start
   const [from, setFrom] = useState(monthStart());
   const [to,   setTo]   = useState(today());
 
-  // 🛡️ THE FIX: Restored your EXACT endpoint and query parameters
   const { data: s, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['branch-summary', branchId, from, to],
-    queryFn: () => 
-      apiFetch(`/api/v1/reports/branch-summary?from=${from}&to=${to}`).then((r) => r.data?.data || r.data),
+    queryFn: () => {
+      const url = branchId 
+        ? `/api/v1/reports/branch-summary?branchId=${branchId}&from=${from}&to=${to}`
+        : `/api/v1/reports/branch-summary?from=${from}&to=${to}`;
+      return apiFetch(url).then((r) => r.data?.data || r.data);
+    },
     refetchInterval: 60_000,
   });
 
   if (isLoading) return <DashboardSkeleton />;
 
-  // 🛡️ THE FIX: Restored your exact nested JSON mapping logic
   const totalRev      = Number(s?.revenue?.total || 0);
   const restaurantRev = Number(s?.revenue?.restaurant || 0);
   const hotelRev      = Number(s?.revenue?.hotel || 0);
@@ -124,7 +128,6 @@ export default function OwnerDashboardPage() {
           </p>
         </div>
 
-        {/* 🛡️ THE FIX: Restored your Date Range Picker */}
         <div className="flex items-center gap-3 flex-wrap animate-in fade-in slide-in-from-right-4 duration-500">
           <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm">
             <div className="flex items-center pl-3 pr-1 text-slate-400"><Calendar size={14} /></div>

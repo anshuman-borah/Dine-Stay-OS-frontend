@@ -205,7 +205,7 @@ Set the same environment variables in your Vercel project settings.
 
 | | |
 |---|---|
-| 🛠️ **Backend repository** | [Dine-Stay-OS-backend](https://github.com/anshuman-borah/Dine-Stay-OS-backend) |
+| 🛠️ **Backend repository** | [Dine-Stay-OS-backend](https://github.com/anshuman-borah/Dine-Stay-OS) |
 | 📖 **Live API docs** | [Swagger UI](https://dinestay-backend-dubd.onrender.com/swagger-ui/index.html) |
 | 📊 **Live metrics** | [Prometheus](https://dinestay-backend-dubd.onrender.com/actuator/prometheus) |
 | 🏥 **Health check** | [/actuator/health](https://dinestay-backend-dubd.onrender.com/actuator/health) |

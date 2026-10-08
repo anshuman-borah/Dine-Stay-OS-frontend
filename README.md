@@ -1,203 +1,223 @@
-# 🍽️ Dine&Stay OS
+<div align="center">
 
-**Restaurant POS & Hotel Management SaaS** — Multi-tenant, India GST-compliant, Offline-first PWA.
+# 🍽️🏨 Dine&Stay OS — Frontend
 
----
+**The web client for a multi-tenant Restaurant POS + Hotel Management SaaS platform.**
 
-## Tech Stack
+Next.js · React · TypeScript · Tailwind CSS · TanStack Query · Zustand
 
-| Layer       | Technology                          |
-|-------------|-------------------------------------|
-| Frontend    | Next.js 14, TypeScript, Tailwind CSS |
-| Backend     | NestJS, TypeScript                  |
-| Database    | PostgreSQL 16                       |
-| Cache       | Redis 7                             |
-| Real-time   | Socket.IO (WebSocket)               |
-| Deployment  | Docker + Docker Compose             |
-| Monorepo    | Turborepo + npm workspaces          |
+[![Live App](https://img.shields.io/badge/Live_App-Vercel-000000?style=for-the-badge&logo=vercel)](https://dine-stay-os-frontend.vercel.app/)
+[![Backend Repo](https://img.shields.io/badge/Backend-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/anshuman-borah/Dine-Stay-OS-backend)
+[![Swagger](https://img.shields.io/badge/API_Docs-Swagger_UI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://dinestay-backend-dubd.onrender.com/swagger-ui/index.html)
 
----
+![Next.js](https://img.shields.io/badge/Next.js-App_Router-000000?logo=nextdotjs)
+![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38BDF8?logo=tailwindcss&logoColor=white)
+![Sentry](https://img.shields.io/badge/Sentry-Monitoring-362D59?logo=sentry)
 
-## Subscription Plans
-
-| Plan       | Price/mo  | Branches | Users | Features                                          |
-|------------|-----------|----------|-------|---------------------------------------------------|
-| Starter    | ₹2,999    | 1        | 10    | POS, Billing, GST, KDS, Inventory, Shifts, Reports |
-| Growth     | ₹7,999    | 5        | 50    | + Multi-branch, HQ Dashboard, Advanced Reports    |
-| Enterprise | Custom    | ∞        | ∞     | Everything + white-label, API access              |
+</div>
 
 ---
 
-## Project Structure
+## 🎬 Demo
+
+<!-- Replace with your screenshot: put the file at docs/screenshot.png -->
+<p align="center">
+  <img src="dine&stay.png" alt="Dine&Stay OS dashboard" width="900"/>
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/m9O6sO0luzw"><b>▶️ Watch the full demo video</b></a>
+</p>
+
+> 🔗 **This repository is the frontend.** The Spring Boot API lives in the [backend repository](https://github.com/anshuman-borah/Dine-Stay-OS-backend), which has the full architecture, data model and API documentation.
+
+> ⏳ The backend runs on Render's free tier and sleeps when idle, so the very first request can take ~30–60 seconds.
+
+---
+
+## ✨ Features
+
+### 🍴 Restaurant
+- **POS terminal** with order-type selection (dine-in / takeaway / delivery), table picker, modifiers, variations and add-ons
+- **Billing modal** with split payments (cash / card / UPI / wallet), discounts and GST-accurate totals
+- **Kitchen Display System (KDS)** that updates live over Socket.IO
+- **Waiter and Cashier views** tailored to each role
+- **Menu, table, inventory and shift management**, including cash denomination counting at shift open/close
+- **Thermal receipt printing** with configurable printer settings
+
+### 🏨 Hotel
+- Room grid, reservations, guest profiles and check-in / check-out
+- Housekeeping board with task status and priority
+- Hotel billing, folio view and **Charge-to-Room** from the POS
+- Dedicated hotel dashboard, reports and shift handling
+
+### 📊 Insights & Administration
+- Dashboard, reports, branch summary, branch-performance and executive views
+- Multi-branch switcher
+- Audit log viewer
+- Employee and role management
+- **Super-admin console** for tenants, plans, subscriptions, payments and platform activity
+
+### 🛡️ Resilience
+- **Offline-aware POS:** orders are queued locally and synced when connectivity returns
+- Online/offline status indicator
+- Subscription wall that gracefully gates features when a trial or plan expires
+- Global error boundaries and loading skeletons
+- **Sentry** error monitoring
+
+---
+
+## 🧰 Tech Stack
+
+| Concern | Choice |
+|---|---|
+| Framework | Next.js (App Router) |
+| Language | TypeScript |
+| UI | React, Tailwind CSS |
+| Server state | TanStack Query (React Query) |
+| Client state | Zustand (`auth`, `pos`, `subscriptionWall` stores) |
+| Real-time | Socket.IO client |
+| Payments | Razorpay Checkout |
+| Monitoring | Sentry |
+| Monorepo tooling | Turborepo + shared types package |
+| Deployment | Vercel |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart LR
+    U["Cashier · Waiter · Kitchen · Owner · Front Desk"] --> N
+
+    subgraph N["Next.js App (Vercel)"]
+        direction TB
+        R["App Router<br/>route groups"]
+        Q["TanStack Query<br/>server state"]
+        Z["Zustand<br/>auth · POS · wall"]
+        O["Offline queue"]
+        R --> Q
+        R --> Z
+        Q --> O
+    end
+
+    N -->|"REST + JWT"| API["Spring Boot API (Render)"]
+    N <-->|"Socket.IO"| API
+    N -->|"Checkout"| RZP["Razorpay"]
+    N -.->|"errors"| S["Sentry"]
+```
+
+Routes are organised with **Next.js route groups**, so each area gets its own layout and access rules:
+
+| Group | Purpose |
+|---|---|
+| `(auth)` | Login, register, forgot / reset password |
+| `(dashboard)` | Tenant-facing app: POS, KDS, menu, tables, inventory, shifts, reports, hotel, employees, settings |
+| `(admin)` | Platform super-admin console |
+| `(legal)` | Privacy policy and terms |
+
+---
+
+## 📁 Project Structure
 
 ```
-dine-and-stay-os/
-├── apps/
-│   ├── api/                    # NestJS backend (port 4000)
-│   │   └── src/
-│   │       ├── modules/
-│   │       │   ├── auth/       # JWT auth, refresh tokens, PIN login
-│   │       │   ├── tenants/    # Multi-tenant management
-│   │       │   ├── subscriptions/ # Plans, feature flags
-│   │       │   ├── branches/   # Multi-branch with HQ
-│   │       │   ├── users/      # Staff management + roles
-│   │       │   ├── tables/     # Table & section management
-│   │       │   ├── menu/       # Categories, items, GST rates
-│   │       │   ├── orders/     # POS orders + KOT + WebSocket
-│   │       │   ├── billing/    # GST invoice, split payments
-│   │       │   ├── inventory/  # Stock ledger, alerts
-│   │       │   ├── shifts/     # Day/shift closing, denomination count
-│   │       │   ├── kds/        # Kitchen Display System
-│   │       │   └── reports/    # Sales, GST, items, payments
-│   │       └── database/seeds/ # Demo data seeder
-│   └── web/                    # Next.js 14 frontend (port 3000)
-│       └── src/
-│           ├── app/            # App Router pages
-│           │   ├── (auth)/     # Login, Register
-│           │   └── (dashboard)/ # All POS pages
-│           ├── components/     # UI components
-│           ├── lib/            # api, gst, printer, offline (IndexedDB)
-│           ├── hooks/          # useSocket, useOnlineStatus
-│           └── store/          # Zustand (auth, pos)
-├── packages/
-│   └── shared/                 # Shared TypeScript types & constants
-├── scripts/
-│   └── init-db.sql             # Complete PostgreSQL schema
-├── nginx/
-│   └── nginx.conf              # Reverse proxy config
-├── docker-compose.yml          # Development
-└── docker-compose.prod.yml     # Production
+src/
+├── app/
+│   ├── (auth)/          # login · register · forgot/reset password
+│   ├── (dashboard)/     # pos · cashier · waiter · kds · menu · tables · inventory
+│   │   │                # shifts · reports · billing · employees · audit · settings
+│   │   └── hotel/       # dashboard · rooms · reservations · housekeeping · billing · shifts · report
+│   ├── (admin)/admin/   # tenants · plans · subscriptions · payments · activity
+│   └── (legal)/         # privacy · terms
+├── components/          # BranchSwitcher · billing · pos · ui (ErrorBoundary, Skeleton, SubscriptionWall)
+├── hooks/               # useSocket · useOnlineStatus · usePrinterSettings · useSubscriptionWall
+├── lib/                 # api client · gst calculations · offline queue · printer · utils
+└── store/               # auth.store · pos.store · subscriptionWall.store
+packages/shared/         # shared types & constants (GST, plans, billing, orders, users)
 ```
 
 ---
 
-## Quick Start
+## 🚀 Getting Started
 
-### 1. Prerequisites
-- Node.js 20+, Docker Desktop
+### Prerequisites
+- Node.js 18+
+- npm
+- A running backend (use the live one, or run the [backend](https://github.com/anshuman-borah/Dine-Stay-OS-backend) locally)
 
-### 2. Clone & setup
+### 1. Clone & install
+
 ```bash
-git clone <repo>
-cd dine-and-stay-os
-cp .env.example .env
-```
-
-### 3. Start with Docker
-```bash
-# Start Postgres + Redis
-docker-compose up -d postgres redis
-
-# Install dependencies
+git clone https://github.com/anshuman-borah/Dine-Stay-OS-frontend.git
+cd Dine-Stay-OS-frontend
 npm install
+```
 
-# Seed demo data
-npm run db:seed
+### 2. Configure environment
 
-# Start API + Web
+Copy `.env.example` to `.env` and adjust:
+
+```env
+APP_URL=http://localhost:3000
+
+# Point at the live API, or http://localhost:4000 for a local backend
+API_URL=https://dinestay-backend-dubd.onrender.com
+NEXT_PUBLIC_API_URL=https://dinestay-backend-dubd.onrender.com
+NEXT_PUBLIC_API_HOST=https://dinestay-backend-dubd.onrender.com
+
+# Feature flags
+ENABLE_MULTI_BRANCH=true
+ENABLE_HOTEL_MODULE=true
+
+# Optional integrations
+NEXT_PUBLIC_SENTRY_DSN=
+RAZORPAY_KEY_ID=
+```
+
+### 3. Run
+
+```bash
 npm run dev
 ```
 
-### 4. Access
-| Service   | URL                          |
-|-----------|------------------------------|
-| Frontend  | http://localhost:3000         |
-| API       | http://localhost:4000/api    |
-| Swagger   | http://localhost:4000/api/docs |
+Open **http://localhost:3000**.
 
-### Demo credentials
-```
-Tenant ID:  (shown after seed)
-Email:      demo@spicegarden.in
-Password:   Demo@1234
+### Production build
+
+```bash
+npm run build
+npm start
 ```
 
 ---
 
-## Key Features
+## ☁️ Deployment
 
-### 🧾 India GST Billing
-- CGST + SGST for intra-state supply
-- IGST for inter-state / B2B (auto-switches on customer GSTIN entry)
-- GST slabs: 0%, 5%, 12%, 18%, 28%
-- GSTR-1 / GSTR-3B summary reports
-- Amount-in-words on receipts
+The frontend is deployed on **Vercel** and talks to the Spring Boot backend on **Render** over HTTPS with JWT authentication and CORS configured for the Vercel origin.
 
-### 🖨️ Thermal Printing
-- ESC/POS command builder for 58mm and 80mm printers
-- Web Serial API (Chrome/Edge) for direct USB printing
-- Browser print fallback (any browser)
-- KOT (Kitchen Order Ticket) printing
-
-### 📴 Offline-First PWA
-- Service Worker with `next-pwa` + Workbox
-- IndexedDB cache for menu, categories, tables
-- Sync queue flushes automatically on reconnect
-- Works fully offline for POS operations
-
-### 🍳 Kitchen Display System (KDS)
-- Real-time WebSocket updates via Socket.IO
-- Per-item status: pending → acknowledged → preparing → ready → bump
-- Urgency highlighting for orders > 10 minutes
-- Groups items by order ticket
-
-### 💰 Shift Management
-- Open/close shifts with denomination count
-  - ₹2000, ₹500, ₹200, ₹100, ₹50, ₹20, ₹10, ₹5, ₹2, ₹1
-- Cash reconciliation: opening + sales - refunds vs counted
-- Payment method breakdown (Cash/UPI/Card/Wallet/Credit/Complimentary)
-- GST summary per shift
-
-### 📦 Inventory
-- Stock ledger with running balance
-- Moving average cost tracking
-- Low stock & out-of-stock alerts
-- Purchase orders with supplier management
-- Auto-deduction on sale (when linked to menu items)
+Set the same environment variables in your Vercel project settings.
 
 ---
 
-## API Endpoints (v1)
+## 🔗 Related
 
-```
-POST   /api/v1/auth/register        Register tenant (14-day trial)
-POST   /api/v1/auth/login           Login
-POST   /api/v1/auth/refresh         Refresh token
-
-GET    /api/v1/menu/categories      List categories
-POST   /api/v1/menu/items           Create menu item
-GET    /api/v1/menu/gst-rates       List GST rates
-
-POST   /api/v1/orders               Create order
-POST   /api/v1/orders/:id/items     Add items (KOT)
-PATCH  /api/v1/orders/:id/status    Update status
-PATCH  /api/v1/orders/:id/discount  Apply discount
-
-POST   /api/v1/billing/bills        Generate bill + process payment
-GET    /api/v1/billing/bills        List bills
-
-GET    /api/v1/kds/pending          KDS pending items
-PATCH  /api/v1/kds/items/:id/bump   Bump item (mark ready)
-
-GET    /api/v1/shifts/active        Get active shift
-POST   /api/v1/shifts/open          Open shift with denomination count
-POST   /api/v1/shifts/:id/close     Close shift
-
-GET    /api/v1/reports/dashboard    Dashboard summary
-GET    /api/v1/reports/daily-sales  Daily sales report
-GET    /api/v1/reports/gst          GST report (GSTR-1/3B)
-
-GET    /api/v1/inventory/alerts     Low stock alerts
-POST   /api/v1/inventory/transactions  Record stock movement
-```
+| | |
+|---|---|
+| 🛠️ **Backend repository** | [Dine-Stay-OS-backend](https://github.com/anshuman-borah/Dine-Stay-OS-backend) |
+| 📖 **Live API docs** | [Swagger UI](https://dinestay-backend-dubd.onrender.com/swagger-ui/index.html) |
+| 📊 **Live metrics** | [Prometheus](https://dinestay-backend-dubd.onrender.com/actuator/prometheus) |
+| 🏥 **Health check** | [/actuator/health](https://dinestay-backend-dubd.onrender.com/actuator/health) |
 
 ---
 
-## Environment Variables
+## 👤 Author
 
-See `.env.example` for all required variables.
+**Anshuman Borah** — [@anshuman-borah](https://github.com/anshuman-borah)
 
 ---
 
-## License
-Proprietary — Dine&Stay Technologies Pvt. Ltd.
+<div align="center">
+⭐ If you found this project interesting, consider giving it a star!
+</div>
